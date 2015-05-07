@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.homepage     = "http://genzeb.github.io/tolo/"
   s.license      = { :type => "MIT", :file => "LICENSE" }
   s.author       = { "Ephraim Tekle" => "genzeb@gmail.com" }
-  s.source       = { :git => "https://github.com/alesanro/tolo.git", :tag => s.versions.to_s }
+  s.source       = { :git => "https://github.com/alesanro/tolo.git", :tag => s.version.to_s }
   
   s.platform     = :ios, "5.0"
   s.source_files = "Tolo/Tolo/*.{h,m}"
