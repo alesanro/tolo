@@ -59,36 +59,43 @@
     
     u_int count;
     
-    Method* methods = class_copyMethodList([self class], &count);
+    Class objClass = [self class];
     
-    for (int i = 0; i < count ; i++) {
+    while(objClass != [NSObject class]) {
+        Method* methods = class_copyMethodList(objClass, &count);
         
-        Method method = methods[i];
-        
-        const char *encoding = method_getTypeEncoding(method);
-        NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:encoding];
-        int parameterCount = [signature numberOfArguments];
-        
-        if (parameterCount - INDEX_FIRST_PARAM != numberOfParams) {
-            continue;
+        for (int i = 0; i < count ; i++) {
+            
+            Method method = methods[i];
+            
+            const char *encoding = method_getTypeEncoding(method);
+            NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:encoding];
+            int parameterCount = [signature numberOfArguments];
+            
+            if (parameterCount - INDEX_FIRST_PARAM != numberOfParams) {
+                continue;
+            }
+            
+            SEL selector = method_getName(method);
+            const char* methodName = sel_getName(selector);
+            NSString *methodNameString = [NSString stringWithCString:methodName encoding:NSUTF8StringEncoding];
+            
+            if (![methodNameString hasPrefix:prefix]) {
+                continue;
+            }
+            
+            NSRange range = {prefix.length, methodNameString.length - prefix.length - (hasParam?1:0)};
+            
+            NSString *paramTypeNameString = [methodNameString substringWithRange:range];
+            
+            [result setObject:methodNameString forKey:paramTypeNameString];
+            
         }
+        free(methods);
         
-        SEL selector = method_getName(method);
-        const char* methodName = sel_getName(selector);
-        NSString *methodNameString = [NSString stringWithCString:methodName encoding:NSUTF8StringEncoding];
-        
-        if (![methodNameString hasPrefix:prefix]) {
-            continue;
-        }
-        
-        NSRange range = {prefix.length, methodNameString.length - prefix.length - (hasParam?1:0)};
-        
-        NSString *paramTypeNameString = [methodNameString substringWithRange:range];
-        
-        [result setObject:methodNameString forKey:paramTypeNameString];
-        
+        objClass = [objClass superclass];
     }
-    free(methods);
+
     return result;
 }
 @end
